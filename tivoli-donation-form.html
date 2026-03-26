@@ -317,13 +317,13 @@
         <img id="photo-img" src="" alt="Preview">
         <button class="photo-remove" onclick="removePhoto()">✕</button>
       </div>
-      <p class="hint" style="margin-top:10px;">No photo? Email one to <strong>tivoli-may-faire-2026@googlegroups.com</strong></p>
+      <p class="hint" style="margin-top:10px;">No photo? Email one to <strong>YOUR_AUCTION_EMAIL_HERE</strong></p>
     </div>
 
     <button class="btn-submit" id="btn-submit" onclick="submitForm()">Submit my donation →</button>
 
     <p class="footer-note">
-      Questions? <strong>tivoli-may-faire-2026@googlegroups.com</strong><br>
+      Questions? <strong>YOUR_AUCTION_EMAIL_HERE</strong><br>
       Tivoli Rainbow Garden Preschool · 4041 Huron Ave, Culver City CA 90232
     </p>
 
@@ -450,11 +450,35 @@
     const payload = { action: 'submit', ...f, photoData: document.getElementById('photo-img').src || '', submittedAt: new Date().toISOString() };
 
     try {
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
+      // Use a hidden form POST to avoid CORS issues with large payloads (photos)
+      await new Promise((resolve) => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = SCRIPT_URL;
+        form.target = 'hidden-iframe';
+        form.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = JSON.stringify(payload);
+        form.appendChild(input);
+
+        let iframe = document.getElementById('hidden-iframe');
+        if (!iframe) {
+          iframe = document.createElement('iframe');
+          iframe.name = 'hidden-iframe';
+          iframe.id = 'hidden-iframe';
+          iframe.style.display = 'none';
+          document.body.appendChild(iframe);
+        }
+
+        document.body.appendChild(form);
+        iframe.onload = () => resolve();
+        form.submit();
+        document.body.removeChild(form);
+        // Resolve after timeout as fallback
+        setTimeout(resolve, 3000);
       });
       document.getElementById('form-wrapper').style.display = 'none';
       document.getElementById('success-screen').style.display = 'block';
