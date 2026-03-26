@@ -423,6 +423,23 @@
     }
   });
 
+  // Compress photo using canvas before sending
+  function compressPhoto(dataUrl, maxWidth, quality) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height, 1);
+        canvas.width  = Math.round(img.width  * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(''); // if compression fails, skip photo
+      img.src = dataUrl;
+    });
+  }
+
   async function submitForm() {
     const f = {
       bizName:          document.getElementById('biz-name').value.trim(),
@@ -450,35 +467,35 @@
     const payload = { action: 'submit', ...f, photoData: document.getElementById('photo-img').src || '', submittedAt: new Date().toISOString() };
 
     try {
-      // Use a hidden form POST to avoid CORS issues with large payloads (photos)
+      // Compress photo before sending
+      if (payload.photoData && payload.photoData.length > 100) {
+        payload.photoData = await compressPhoto(payload.photoData, 600, 0.7);
+      }
+
+      // Use hidden iframe POST to bypass CORS while keeping full payload including photo
       await new Promise((resolve) => {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = SCRIPT_URL;
-        form.target = 'hidden-iframe';
+        form.target = 'submit-iframe';
         form.style.display = 'none';
-
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'payload';
         input.value = JSON.stringify(payload);
         form.appendChild(input);
-
-        let iframe = document.getElementById('hidden-iframe');
+        let iframe = document.getElementById('submit-iframe');
         if (!iframe) {
           iframe = document.createElement('iframe');
-          iframe.name = 'hidden-iframe';
-          iframe.id = 'hidden-iframe';
+          iframe.name = 'submit-iframe';
+          iframe.id = 'submit-iframe';
           iframe.style.display = 'none';
           document.body.appendChild(iframe);
         }
-
         document.body.appendChild(form);
-        iframe.onload = () => resolve();
+        iframe.onload = () => { document.body.removeChild(form); resolve(); };
+        setTimeout(() => { if (document.body.contains(form)) document.body.removeChild(form); resolve(); }, 4000);
         form.submit();
-        document.body.removeChild(form);
-        // Resolve after timeout as fallback
-        setTimeout(resolve, 3000);
       });
       document.getElementById('form-wrapper').style.display = 'none';
       document.getElementById('success-screen').style.display = 'block';
