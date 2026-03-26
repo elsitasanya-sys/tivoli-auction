@@ -317,13 +317,13 @@
         <img id="photo-img" src="" alt="Preview">
         <button class="photo-remove" onclick="removePhoto()">✕</button>
       </div>
-      <p class="hint" style="margin-top:10px;">No photo? Email one to <strong>YOUR_AUCTION_EMAIL_HERE</strong></p>
+      <p class="hint" style="margin-top:10px;">No photo? Email one to <strong>tivoli-may-faire-2026@googlegroups.com</strong></p>
     </div>
 
     <button class="btn-submit" id="btn-submit" onclick="submitForm()">Submit my donation →</button>
 
     <p class="footer-note">
-      Questions? <strong>YOUR_AUCTION_EMAIL_HERE</strong><br>
+      Questions? <strong>tivoli-may-faire-2026@googlegroups.com</strong><br>
       Tivoli Rainbow Garden Preschool · 4041 Huron Ave, Culver City CA 90232
     </p>
 
@@ -469,7 +469,7 @@
     try {
       // Compress photo before sending
       if (payload.photoData && payload.photoData.length > 100) {
-        payload.photoData = await compressPhoto(payload.photoData, 600, 0.7);
+        payload.photoData = await compressPhoto(payload.photoData, 200, 0.5);
       }
 
       await fetch(SCRIPT_URL, {
@@ -483,7 +483,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       btn.disabled = false; btn.textContent = 'Submit my donation →';
-      alert('Something went wrong. Please try again or email YOUR_AUCTION_EMAIL_HERE');
+      alert('Something went wrong. Please try again or email tivoli-may-faire-2026@googlegroups.com');
     }
   }
 </script>
