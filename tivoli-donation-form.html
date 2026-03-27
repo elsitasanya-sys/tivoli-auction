@@ -469,7 +469,7 @@
     try {
       // Compress photo before sending
       if (payload.photoData && payload.photoData.length > 100) {
-        payload.photoData = await compressPhoto(payload.photoData, 200, 0.5);
+        payload.photoData = await compressPhoto(payload.photoData, 1200, 0.9);
       }
 
       await fetch(SCRIPT_URL, {
